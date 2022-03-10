@@ -9,7 +9,13 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
+#include <frc/trajectory/constraint/RectangularRegionConstraint.h>
+#include <frc/trajectory/constraint/MaxVelocityConstraint.h>
 
+#include <networktables/NetworkTable.h>
+#include "networktables/NetworkTableEntry.h"
+#include "networktables/NetworkTableInstance.h"
+#include "networktables/NetworkTableValue.h"
 
 #include "Drivetrain.h"
 #include "SwerveModule.h"
@@ -31,7 +37,8 @@ private:
   frc::Timer autoTimer;
   int trajSelect;
 
-
+  std::shared_ptr<nt::NetworkTable> limelight = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
+  
   
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0
@@ -74,17 +81,17 @@ private:
     
     m_swerve.SetHeading(0_deg);
     headingControl =  true;
-    frc::Pose2d x(0_m, 0_m, frc::Rotation2d(0_deg));
+    frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
      
     m_speedScale = 1.0;
 
     m_swerve.SetPose(x);
     trajSelect = 0;
 
-    frc::Pose2d trajStartPoint{0_ft,0_ft,0_deg};
-    frc::Pose2d trajEndPoint{12_ft,-6_ft,0_deg};
+    frc::Pose2d trajStartPoint{x.X(),x.Y(),x.Rotation().Degrees()};
+    frc::Pose2d trajEndPoint{301_in,20_in,-100_deg};
     std::vector<frc::Translation2d> interiorWaypoints{
-      frc::Translation2d{4_ft, 0_ft}};
+      frc::Translation2d{306_in, 71_in}};
 
     units::scalar_t scaleSpeed = 1.0;
     units::meters_per_second_t maxV(constants::swerveConstants::MaxSpeed/scaleSpeed);
@@ -94,10 +101,70 @@ private:
     config.SetReversed(false);
     
     traj = frc::TrajectoryGenerator::GenerateTrajectory(trajStartPoint, interiorWaypoints, trajEndPoint, config);
-    config.SetReversed(true);
-    traj2 = frc::TrajectoryGenerator::GenerateTrajectory(trajEndPoint, interiorWaypoints, trajStartPoint , config);
+
+    frc::Pose2d trajEndPoint2{12_in,33_in,-100_deg};
+    std::vector<frc::Translation2d> interiorWaypoints2{
+      frc::Translation2d{270_in, 90_in},
+      frc::Translation2d{198_in, 75_in}/*,
+      frc::Translation2d{50_in, 50_in}*/
+      };
+    
+    frc::RectangularRegionConstraint slowRegion1(frc::Translation2d{180_in, 60_in},
+                                                 frc::Translation2d{212_in, 90_in},
+                                                 frc::MaxVelocityConstraint{1_mps}
+                                                );
+    config.AddConstraint(slowRegion1);
+
+    traj2 = frc::TrajectoryGenerator::GenerateTrajectory(trajEndPoint, interiorWaypoints2, trajEndPoint2 , config);
 
   }
+
+  bool IsTargetVisable(){
+    
+    double tv = limelight->GetNumber("tv", 0.0);
+    if(tv== 0.0){
+      return false;
+    }else{
+      return true;
+    }
+    
+   return false;
+  }
+
+  units::degree_t GetTargetAngleDelta(){
+    
+    double tx = limelight->GetNumber("tx",0.0);
+    if(IsTargetVisable()){
+      return units::degree_t(tx);
+    }else{
+      return 0_deg;
+    }
+    
+   return 0_deg;
+  }
+
+  units::inch_t GetTargetRange(){
+    
+    double targetOffsetAngle_Vertical = limelight->GetNumber("ty", 0.0);
+    
+    // how many degrees back is your limelight rotated from perfectly vertical?
+    double limelightMountAngleDegrees = 75.0;
+
+    // distance from the center of the Limelight lens to the floor
+    double limelightHeightInches = 20.0;
+
+    // distance from the target to the floor
+    double goalHeightInches = 104.0;
+
+    double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+    double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+
+    //calculate distance
+    double distanceFromLimelightToGoalInches = (goalHeightInches - limelightHeightInches)/tan(angleToGoalRadians);
+    return units::inch_t(distanceFromLimelightToGoalInches);
+    //*/return 0_in;
+  }
+
 
   void RobotPeriodic() override {
     m_swerve.UpdateOdometry();
@@ -115,7 +182,9 @@ private:
   }
 
   void AutonomousInit() override {
-    m_swerve.SetPose(frc::Pose2d(0_m,0_m,m_swerve.GetPose().Rotation()));
+    frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
+     
+    m_swerve.SetPose(x);
     autoTimer.Reset();
     autoTimer.Start();
     trajSelect = 0;
@@ -125,18 +194,23 @@ private:
   void AutonomousPeriodic() override {
     //DriveWithJoystick(false);
     m_swerve.UpdateOdometry();
-    if(autoTimer.Get()>(traj.TotalTime()+1_s)){
-      trajSelect++;
-      autoTimer.Reset();
-    }
+    
     
     frc::Pose2d p;
     switch(trajSelect){
       case 0: p = traj.Sample(autoTimer.Get()).pose; 
-              m_swerve.DrivePos(p.X(), p.Y(), -90_deg);
+              m_swerve.DrivePos(p.X(), p.Y(), -100_deg);
+              if(autoTimer.Get()>(traj.TotalTime()+1_s)){
+                trajSelect++;
+                autoTimer.Reset();
+              }
               break;
       case 1: p = traj2.Sample(autoTimer.Get()).pose;
-              m_swerve.DrivePos(p.X(), p.Y(), 90_deg);
+              m_swerve.DrivePos(p.X(), p.Y(), -140_deg);
+              if(autoTimer.Get()>(traj2.TotalTime()+1_s)){
+                trajSelect++;
+                autoTimer.Reset();
+              }
               break;
       default: m_swerve.DriveXY(0_mps,0_mps);
     }
