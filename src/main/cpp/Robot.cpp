@@ -17,11 +17,16 @@
 #include "networktables/NetworkTableInstance.h"
 #include "networktables/NetworkTableValue.h"
 
+#include <frc/DriverStation.h>
+
 #include "Drivetrain.h"
 #include "SwerveModule.h"
 #include "Constants.h"
 #include <frc/SerialPort.h>
 #include <networktables/NetworkTable.h>
+
+#include "Indexer.h"
+#include "Shooter.h"
 
 class Robot : public frc::TimedRobot {
 private:
@@ -29,6 +34,8 @@ private:
   constants::swerveConstants::SwerveConfig config;
   Drivetrain m_swerve{config};
   bool headingControl;
+
+  Indexer indexer;
 
   double m_speedScale;
 
@@ -182,6 +189,14 @@ private:
   }
 
   void AutonomousInit() override {
+    switch(frc::DriverStation::GetAlliance()){
+      case frc::DriverStation::kBlue: indexer.Init(Indexer::BallColor::kBlue);
+                                      break;
+      case frc::DriverStation::kRed: indexer.Init(Indexer::BallColor::kRed);
+                                      break;
+      default: indexer.Init(Indexer::BallColor::kBlue);
+    }
+
     frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
      
     m_swerve.SetPose(x);
@@ -218,9 +233,36 @@ private:
     
   }
 
+  void TeleopInit(){
+    if(indexer.GetBalLColor()== Indexer::BallColor::kNone){
+      switch(frc::DriverStation::GetAlliance()){
+      case frc::DriverStation::kBlue: indexer.Init(Indexer::BallColor::kBlue);
+                                      break;
+      case frc::DriverStation::kRed: indexer.Init(Indexer::BallColor::kRed);
+                                      break;
+      default: indexer.Init(Indexer::BallColor::kBlue);
+    }
+    }
+  }
+  
   void TeleopPeriodic() override { 
     
     //DriveWithJoystick(true); 
+
+    if(stick.GetLeftBumperPressed()){
+      indexer.ToggleFeederPos();
+    }
+    double feedSpeed = stick.GetLeftTriggerAxis();
+    if(feedSpeed <.1){
+      indexer.SetFeederSpeed(-.2)
+    }else{
+      indexer.SetFeederSpeed(feedSpeed)
+    }
+    indexer.Update();
+
+    if(stick.GetRightBumperPressed()){
+      indexer.Fire();
+    }
 
     if(stick.GetStartButtonPressed()){
       headingControl = !headingControl;
