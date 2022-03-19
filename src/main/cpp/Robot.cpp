@@ -326,7 +326,11 @@ private:
   }
 
   void Shoot(){
-    
+    double s = stick.GetRightTriggerAxis();
+    if(s>.1){
+      shooter.SetShooterSpeed(s,s);
+    }
+    /*
     if(stick.GetYButtonPressed()){
       shooter.SetAngle(20_deg);
     }
@@ -336,6 +340,7 @@ private:
     if(stick.GetBButtonPressed()){
       shooter.SetAngle(0_deg);
     }
+    */
   }
 
   void TeleopPeriodic() override { 
@@ -352,6 +357,7 @@ private:
 
     
     Balls();
+    Shoot();
     Drive();
     
   }
