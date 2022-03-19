@@ -16,6 +16,7 @@
 namespace constants{
 
   constexpr double NominalVoltage = 12.0;
+  constexpr double ShooterTurnTicksPerDegree = 4096.0/(360.0/6.0);
 
   namespace swerveConstants{
 

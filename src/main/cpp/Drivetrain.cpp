@@ -187,12 +187,12 @@ void Drivetrain::PutChildSendables(){
 
 void Drivetrain::SendData(){
   
-  frc::SmartDashboard::PutNumber("X Position meters", GetPose().X().value());
+  //frc::SmartDashboard::PutNumber("X Position meters", GetPose().X().value());
   frc::SmartDashboard::PutNumber("X Position inches", units::inch_t(GetPose().X()).value());
-  frc::SmartDashboard::PutNumber("Y Position meters", GetPose().Y().value());
+  //frc::SmartDashboard::PutNumber("Y Position meters", GetPose().Y().value());
   frc::SmartDashboard::PutNumber("Y Position inches", units::inch_t(GetPose().Y()).value());
   frc::SmartDashboard::PutNumber("Heading Deg", GetPose().Rotation().Degrees().value());
-  frc::SmartDashboard::PutNumber("Raw Heading Deg", m_gyro.GetYaw());
+  //frc::SmartDashboard::PutNumber("Raw Heading Deg", m_gyro.GetYaw());
 
   frc::SmartDashboard::PutNumber("Heading Control w", m_vw_goal.value());
   frc::SmartDashboard::PutNumber("Heading Target", m_targetHeading.value());

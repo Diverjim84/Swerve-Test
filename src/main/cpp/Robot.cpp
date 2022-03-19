@@ -36,6 +36,7 @@ private:
   bool headingControl;
 
   Indexer indexer;
+  Shooter shooter;
 
   double m_speedScale;
 
@@ -177,12 +178,18 @@ private:
     m_swerve.UpdateOdometry();
 
     m_swerve.SendData();
+    indexer.SendData();
+    shooter.SendData();
 
     frc::SmartDashboard::PutNumber("Stick Left Y", stick.GetLeftY());
     frc::SmartDashboard::PutNumber("Stick Left X", stick.GetLeftX());
 
     frc::SmartDashboard::PutNumber("Stick Right Y", stick.GetRightY());
     frc::SmartDashboard::PutNumber("Stick Right X", stick.GetRightX());
+
+    frc::SmartDashboard::PutNumber("Vision Target Distance (inch)", GetTargetRange().value());
+    frc::SmartDashboard::PutNumber("Vision Target Angle (deg)", GetTargetAngleDelta().value());
+    frc::SmartDashboard::PutBoolean("Vision Target Visable", IsTargetVisable());
 
     //devModule.SendData();
 
@@ -244,34 +251,39 @@ private:
     }
     }
   }
-  
-  void TeleopPeriodic() override { 
-    
-    //DriveWithJoystick(true); 
 
+  void Balls(){
     if(stick.GetLeftBumperPressed()){
       indexer.ToggleFeederPos();
     }
     double feedSpeed = stick.GetLeftTriggerAxis();
     if(feedSpeed <.1){
-      indexer.SetFeederSpeed(-.2)
+      indexer.SetFeederSpeed(0.0);
     }else{
-      indexer.SetFeederSpeed(feedSpeed)
+      indexer.SetFeederSpeed(feedSpeed);
     }
     indexer.Update();
 
     if(stick.GetRightBumperPressed()){
+      shooter.SetShooterSpeed(.3, .3);
       indexer.Fire();
     }
-
-    if(stick.GetStartButtonPressed()){
-      headingControl = !headingControl;
-    }    
-
-    if(stick.GetBackButtonPressed()){
-      m_swerve.SetPose(frc::Pose2d(0_m, 0_m, frc::Rotation2d(0_deg)));
+    if(stick.GetXButton()){
+      indexer.SetLower(-.3);
+      indexer.SetUpper(-.3);
+      indexer.SetFeederSpeed(-.3);
+    }
+    if(stick.GetBButtonPressed())
+    {
+      indexer.Stop();
+      shooter.SetShooterSpeed(0.0, 0.0);
     }
 
+
+  }
+
+  void Drive()
+  {
     double drivex = -stick.GetLeftY();
     double drivey = -stick.GetLeftX();
     if((fabs(drivex)+fabs(drivey))/2.0<.2){
@@ -306,11 +318,42 @@ private:
                       constants::swerveConstants::MaxSpeed/scale*drivey);
       */
     }
-
     //devModule.Set(g);
     frc::SmartDashboard::PutNumber("input x", drivex);
     frc::SmartDashboard::PutNumber("input y", drivey);
     frc::SmartDashboard::PutNumber("input w", w);
+
+  }
+
+  void Shoot(){
+    
+    if(stick.GetYButtonPressed()){
+      shooter.SetAngle(20_deg);
+    }
+    if(stick.GetAButtonPressed()){
+      shooter.SetAngle(-20_deg);
+    }
+    if(stick.GetBButtonPressed()){
+      shooter.SetAngle(0_deg);
+    }
+  }
+
+  void TeleopPeriodic() override { 
+    
+    //DriveWithJoystick(true); 
+
+    if(stick.GetStartButtonPressed()){
+      headingControl = !headingControl;
+    }    
+
+    if(stick.GetBackButtonPressed()){
+      m_swerve.SetPose(frc::Pose2d(0_m, 0_m, frc::Rotation2d(0_deg)));
+    }
+
+    
+    Balls();
+    Drive();
+    
   }
 
  

@@ -128,18 +128,18 @@ void SwerveModule::InitSendable(wpi::SendableBuilder& builder){
 void SwerveModule::SendData(){
     //drive motor
     frc::SmartDashboard::PutNumber(m_id + " drive mps", GetState().speed.value());
-    frc::SmartDashboard::PutNumber(m_id + " raw drive speed", m_driveMotor.GetSelectedSensorVelocity());
+    //frc::SmartDashboard::PutNumber(m_id + " raw drive speed", m_driveMotor.GetSelectedSensorVelocity());
     //frc::SmartDashboard::PutNumber(m_id + " raw drive position", m_driveMotor.GetSelectedSensorPosition());
-    frc::SmartDashboard::PutNumber(m_id + " raw drive Output %", m_driveMotor.GetMotorOutputPercent());
-    frc::SmartDashboard::PutString(m_id + " Drive Control Mode", ctreHelpers::CTREControlMode2Str(m_driveMotor.GetControlMode()));
+    //frc::SmartDashboard::PutNumber(m_id + " raw drive Output %", m_driveMotor.GetMotorOutputPercent());
+    //frc::SmartDashboard::PutString(m_id + " Drive Control Mode", ctreHelpers::CTREControlMode2Str(m_driveMotor.GetControlMode()));
     frc::SmartDashboard::PutNumber(m_id + " raw drive pid target", ctreHelpers::CTRE_Get_PID_Target(m_driveMotor));
     frc::SmartDashboard::PutNumber(m_id + " raw drive pid error", ctreHelpers::CTRE_Get_PID_Error(m_driveMotor));
     
     //turn motor
     //frc::SmartDashboard::PutNumber(m_id + " raw turn speed", m_turnMotor.GetSelectedSensorVelocity());
-    frc::SmartDashboard::PutNumber(m_id + " raw turn position", m_turnMotor.GetSelectedSensorPosition());
-    frc::SmartDashboard::PutNumber(m_id + " raw turn Output %", m_turnMotor.GetMotorOutputPercent());
-    frc::SmartDashboard::PutString(m_id + " Turn Control Mode", ctreHelpers::CTREControlMode2Str(m_turnMotor.GetControlMode()));
+    //frc::SmartDashboard::PutNumber(m_id + " raw turn position", m_turnMotor.GetSelectedSensorPosition());
+    //frc::SmartDashboard::PutNumber(m_id + " raw turn Output %", m_turnMotor.GetMotorOutputPercent());
+    //frc::SmartDashboard::PutString(m_id + " Turn Control Mode", ctreHelpers::CTREControlMode2Str(m_turnMotor.GetControlMode()));
     frc::SmartDashboard::PutNumber(m_id + " raw turn pid target", ctreHelpers::CTRE_Get_PID_Target(m_turnMotor));
     frc::SmartDashboard::PutNumber(m_id + " raw turn pid error", ctreHelpers::CTRE_Get_PID_Error(m_turnMotor));
 

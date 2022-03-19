@@ -28,11 +28,11 @@ public:
   };
 
 private:
-  rev::CANSparkMax m_upperStageMotor{2, rev::CANSparkMaxLowLevel::MotorType::kBrushed};
-  rev::CANSparkMax m_lowerStageMotor{3, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
-  rev::CANSparkMax m_feeder{4, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
+  rev::CANSparkMax m_upperStageMotor{18, rev::CANSparkMaxLowLevel::MotorType::kBrushed};
+  rev::CANSparkMax m_lowerStageMotor{19, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
+  rev::CANSparkMax m_feeder{20, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
 
-  frc::DigitalInput m_upperBallSensor{1};
+  frc::DigitalInput m_upperBallSensor{2};
   frc::DigitalInput m_lowerBallSensor{0};
 
   BallColor m_myColor;
@@ -65,5 +65,10 @@ private:
   void SetUpper(double speed);
   
   BallColor GetBalLColor(){return m_myColor;};
+
+  void SendData();
+
+  bool GetUpperBallSensor(){return !m_upperBallSensor.Get();};
+  bool GetLowerBallSensor(){return !m_lowerBallSensor.Get();};
 
 };
