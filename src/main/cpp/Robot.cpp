@@ -265,7 +265,6 @@ private:
     indexer.Update();
 
     if(stick.GetRightBumperPressed()){
-      shooter.SetShooterSpeed(.3, .3);
       indexer.Fire();
     }
     if(stick.GetXButton()){
