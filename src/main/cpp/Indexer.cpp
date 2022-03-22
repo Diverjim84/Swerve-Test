@@ -62,7 +62,7 @@ void Indexer::Update(){
         }
     }else{
         if(m_upperState.state == kFiring){
-            if(m_firingTimer.Get()>1_s){
+            if(m_firingTimer.Get()>.25_s){
                 m_upperState.state = BallState::kEmpty;
                 m_upperState.color = BallColor::kNone;
                 m_firing = false;
@@ -97,7 +97,7 @@ void Indexer::Update(){
             SetUpper(.25);
             break;
         case BallState::kFiring : 
-            SetUpper(.6);//Increase after Mechanical Fixes their crap!!!
+            SetUpper(1.0);//Increase after Mechanical Fixes their crap!!!
             break;
         case BallState::kReady : 
             SetUpper(.0);

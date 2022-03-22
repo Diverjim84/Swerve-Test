@@ -16,7 +16,8 @@ class Shooter {
  public:
   Shooter();
 
-  void SetShooterSpeed(double frontSpeed, double backSpeed);
+  void SetShooterSpeed(double frontSpeedPercent, double backSpeedPercent);
+  void SetShooter(units::feet_per_second_t frontSpeed, units::feet_per_second_t backSpeed);
   void SetAngleMotorSpeed(double speed);
   void SetAngle(units::degree_t angle);
   units::degree_t GetAngle();

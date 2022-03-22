@@ -11,6 +11,7 @@
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include <frc/trajectory/constraint/RectangularRegionConstraint.h>
 #include <frc/trajectory/constraint/MaxVelocityConstraint.h>
+#include <frc/smartdashboard/SendableChooser.h>
 
 #include <networktables/NetworkTable.h>
 #include "networktables/NetworkTableEntry.h"
@@ -30,7 +31,9 @@
 
 class Robot : public frc::TimedRobot {
 private:
-  frc::XboxController stick{0};
+  frc::XboxController driver{0};
+  frc::XboxController codriver{1};
+
   constants::swerveConstants::SwerveConfig config;
   Drivetrain m_swerve{config};
   bool headingControl;
@@ -40,6 +43,13 @@ private:
 
   double m_speedScale;
 
+  frc::SendableChooser<std::string> m_autoChooser;
+  const std::string kAuto5Ball = "5 Ball";
+  const std::string kAuto2Ball = "2 Ball";
+  const std::string kAuto1Ball = "1 Ball";
+  const std::string kAuto7Ball = "7 Ball";
+  std::string m_autoSelected;
+
   frc::Trajectory traj;
   frc::Trajectory traj2;
   frc::Timer autoTimer;
@@ -47,29 +57,35 @@ private:
 
   std::shared_ptr<nt::NetworkTable> limelight = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
   
-  
+  enum DriveMode{
+    VelocityMode,
+    HeadingControl,
+    TargetTracking
+  } driveMode;
+
+  bool manualShooterMode;
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0
   // to 1.
-  frc::SlewRateLimiter<units::scalar> m_xspeedLimiter{3 / 1_s};
-  frc::SlewRateLimiter<units::scalar> m_yspeedLimiter{3 / 1_s};
-  frc::SlewRateLimiter<units::scalar> m_rotLimiter{3 / 1_s};
+  frc::SlewRateLimiter<units::scalar> m_xspeedLimiter{2 / 1_s};
+  frc::SlewRateLimiter<units::scalar> m_yspeedLimiter{2 / 1_s};
+  frc::SlewRateLimiter<units::scalar> m_rotLimiter{2 / 1_s};
 
   void DriveWithJoystick(bool fieldRelative) {
 
-    m_speedScale = 1.0-stick.GetRightTriggerAxis();
+    m_speedScale = 1.0-driver.GetRightTriggerAxis();
 
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
     const auto xSpeed = -m_xspeedLimiter.Calculate(
-                            frc::ApplyDeadband(stick.GetLeftY(), 0.15)) *
+                            frc::ApplyDeadband(driver.GetLeftY(), 0.15)) *
                         constants::swerveConstants::MaxSpeed*m_speedScale;
 
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
     const auto ySpeed = -m_yspeedLimiter.Calculate(
-                            frc::ApplyDeadband(stick.GetLeftX(), 0.15)) *
+                            frc::ApplyDeadband(driver.GetLeftX(), 0.15)) *
                         constants::swerveConstants::MaxSpeed*m_speedScale;
 
     
@@ -81,14 +97,7 @@ private:
     
   }
 
-
- public:
-  void RobotInit() override {
-    //frc::SmartDashboard::PutData("Drivetrain", &m_swerve);
-    //m_swerve.PutChildSendables();
-    
-    m_swerve.SetHeading(0_deg);
-    headingControl =  true;
+  void Gen5Ball(){
     frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
      
     m_speedScale = 1.0;
@@ -124,6 +133,56 @@ private:
     config.AddConstraint(slowRegion1);
 
     traj2 = frc::TrajectoryGenerator::GenerateTrajectory(trajEndPoint, interiorWaypoints2, trajEndPoint2 , config);
+
+  }
+
+  void Gen7Ball(){
+
+  }
+
+  void Gen2Ball(){
+    
+  }
+
+  void Gen1Ball(){
+    
+  }
+
+  void Run5Ball(){
+    
+  }
+
+  void Run7Ball(){
+    
+  }
+
+  void Run2Ball(){
+    
+  }
+
+  void Run1Ball(){
+    
+  }
+
+  
+
+
+ public:
+  void RobotInit() override {
+    //frc::SmartDashboard::PutData("Drivetrain", &m_swerve);
+    //m_swerve.PutChildSendables();
+    
+    m_autoChooser.SetDefaultOption(kAuto5Ball, kAuto5Ball);
+    m_autoChooser.AddOption(kAuto7Ball, kAuto7Ball);
+    m_autoChooser.AddOption(kAuto2Ball, kAuto2Ball);
+    m_autoChooser.AddOption(kAuto1Ball, kAuto1Ball);
+    frc::SmartDashboard::PutData("Auto Modes", &m_autoChooser);
+
+    m_swerve.SetHeading(-160_deg);
+    headingControl =  true;
+    manualShooterMode = false;
+    driveMode = DriveMode::HeadingControl;
+    
 
   }
 
@@ -181,11 +240,11 @@ private:
     indexer.SendData();
     shooter.SendData();
 
-    frc::SmartDashboard::PutNumber("Stick Left Y", stick.GetLeftY());
-    frc::SmartDashboard::PutNumber("Stick Left X", stick.GetLeftX());
+    frc::SmartDashboard::PutNumber("Stick Left Y", driver.GetLeftY());
+    frc::SmartDashboard::PutNumber("Stick Left X", driver.GetLeftX());
 
-    frc::SmartDashboard::PutNumber("Stick Right Y", stick.GetRightY());
-    frc::SmartDashboard::PutNumber("Stick Right X", stick.GetRightX());
+    frc::SmartDashboard::PutNumber("Stick Right Y", driver.GetRightY());
+    frc::SmartDashboard::PutNumber("Stick Right X", driver.GetRightX());
 
     frc::SmartDashboard::PutNumber("Vision Target Distance (inch)", GetTargetRange().value());
     frc::SmartDashboard::PutNumber("Vision Target Angle (deg)", GetTargetAngleDelta().value());
@@ -253,26 +312,31 @@ private:
   }
 
   void Balls(){
-    if(stick.GetLeftBumperPressed()){
+    //Driver Left Bumper Toggles Feeder up/down
+    if(codriver.GetLeftBumperPressed()){
       indexer.ToggleFeederPos();
     }
-    double feedSpeed = stick.GetLeftTriggerAxis();
+    //Driver Left Trigger Drives Intake speed
+    double feedSpeed = codriver.GetLeftTriggerAxis();
     if(feedSpeed <.1){
       indexer.SetFeederSpeed(0.0);
     }else{
+      //set a min feed speed and then scale the input speed based on the remaining range
+      double minFeed = .25;
+      feedSpeed = minFeed+feedSpeed*(1.0-minFeed);
       indexer.SetFeederSpeed(feedSpeed);
     }
+    //update Indexer state maching and control the lower and upper stage motors
     indexer.Update();
 
-    if(stick.GetRightBumperPressed()){
-      indexer.Fire();
-    }
-    if(stick.GetXButton()){
+    //codriver Start button ejects balls
+    if(codriver.GetStartButton()){
       indexer.SetLower(-.3);
       indexer.SetUpper(-.3);
       indexer.SetFeederSpeed(-.3);
     }
-    if(stick.GetBButtonPressed())
+
+    if(codriver.GetBackButtonPressed())
     {
       indexer.Stop();
       shooter.SetShooterSpeed(0.0, 0.0);
@@ -283,60 +347,128 @@ private:
 
   void Drive()
   {
-    double drivex = -stick.GetLeftY();
-    double drivey = -stick.GetLeftX();
-    if((fabs(drivex)+fabs(drivey))/2.0<.2){
+    double drivex = -driver.GetLeftY();
+    double drivey = -driver.GetLeftX();
+    if((fabs(drivex)+fabs(drivey))/2.0<.1){
       drivex = 0.0;
       drivey = 0.0;
     }
-    double hy = -stick.GetRightX();
-    double hx = -stick.GetRightY();
-    double mag = sqrt(hx*hx+hy*hy);
+
+    //Get Right joystick for heading and velocity control
+    double hy = -driver.GetRightX(); //hy is w for vel control
+    double hx = -driver.GetRightY();
+
+    units::scalar_t scale = 1.0-driver.GetRightTriggerAxis()*.5;
+
+    if(driver.GetXButtonPressed()){
+      driveMode = DriveMode::TargetTracking;
+    }
     
-
-    double w  = -stick.GetRightX();
+    if(driver.GetAButtonPressed()){
+      driveMode = DriveMode::HeadingControl;
+    }
     
+    if(driver.GetBButtonPressed()){
+      driveMode = DriveMode::VelocityMode;
+    }
 
-
-    double scale = 1.0-stick.GetRightTriggerAxis();
+    switch(driveMode){
+      case DriveMode::VelocityMode : 
+        if(fabs(hy)<.1){//deadband rot vel, translations were done
+          hy = 0.0;
+        }
+        m_swerve.Drive(
+            m_xspeedLimiter.Calculate(pow(drivex,1)) * constants::swerveConstants::MaxSpeed * scale,
+            m_yspeedLimiter.Calculate(pow(drivey,1)) * constants::swerveConstants::MaxSpeed * scale, 
+            m_rotLimiter.Calculate(pow(hy,3)) * constants::swerveConstants::MaxAngularVelocity * scale, 
+            true);
+        break;
+      case DriveMode::HeadingControl :
+        if(sqrt(hx*hx+hy*hy) > .75)//make sure the joystick is begin used by calculating magnitude
+        {
+            m_swerve.SetTargetHeading(frc::Rotation2d(hx, hy).Degrees());
+        }
+        m_swerve.DriveXY(
+            m_xspeedLimiter.Calculate(pow(drivex,1)) * constants::swerveConstants::MaxSpeed * scale,
+            m_yspeedLimiter.Calculate(pow(drivey,1)) * constants::swerveConstants::MaxSpeed * scale);
+        break;
+      case DriveMode::TargetTracking :
+        //add code to set heading angle
+        m_swerve.DriveXY(
+            m_xspeedLimiter.Calculate(pow(drivex,1)) * constants::swerveConstants::MaxSpeed * scale,
+            m_yspeedLimiter.Calculate(pow(drivey,1)) * constants::swerveConstants::MaxSpeed * scale);
+        break;
+       
+    }
+    /*
     if(!headingControl){
-      if(fabs(w)<.2){
-        w = 0.0;
+      if(fabs(hy)<.1){
+        hy = 0.0;
       }
       m_swerve.Drive( constants::swerveConstants::MaxSpeed*scale*drivex, 
                     constants::swerveConstants::MaxSpeed*scale*drivey, 
-                    constants::swerveConstants::MaxAngularVelocity*scale*w, true);
+                    constants::swerveConstants::MaxAngularVelocity*scale*hy, true);
     }else{
-      if(mag > .5)
+      if(sqrt(hx*hx+hy*hy) > .75)//make sure the joystick is begin used by calculating magnitude
       {
           m_swerve.SetTargetHeading(frc::Rotation2d(hx, hy).Degrees());
       }
       DriveWithJoystick(true);
-      /*
-      m_swerve.DriveXY(constants::swerveConstants::MaxSpeed/scale*drivex, 
-                      constants::swerveConstants::MaxSpeed/scale*drivey);
-      */
+      
     }
-    //devModule.Set(g);
-    frc::SmartDashboard::PutNumber("input x", drivex);
-    frc::SmartDashboard::PutNumber("input y", drivey);
-    frc::SmartDashboard::PutNumber("input w", w);
+    */
 
   }
 
   void Shoot(){
-    double s = stick.GetRightTriggerAxis();
-    if(s>.1){
-      shooter.SetShooterSpeed(s,s);
+    //Codriver right & left Bumper send fire command
+    if(codriver.GetRightBumperPressed()){
+      indexer.Fire();
     }
+
+    double backRoller = -frc::ApplyDeadband(codriver.GetRightY(), .15);
+    double frontRoller = -frc::ApplyDeadband(codriver.GetLeftY(), .15);
+    //see if codriver is trying to manually control shooter
+    if(fabs(backRoller) >.1 || fabs(frontRoller)> .1){
+      manualShooterMode = true;
+    }
+
+    //If in manual mode, Drive shooter manually
+    if(manualShooterMode){
+      shooter.SetShooterSpeed(frontRoller, backRoller);
+    }
+
+    //Near High Goal Shot
+    if(codriver.GetAButtonPressed()){
+      //exit velocity of 21fps, 75deg, 1.25ft from target edge
+      shooter.SetShooter(60_fps, 80_fps);
+      manualShooterMode = false;
+    }
+    //Near Low Goal Shot
+    if(codriver.GetXButtonPressed()){
+      shooter.SetShooter(20_fps, 10_fps);
+      manualShooterMode = false;
+    }
+    //Mid High Goal Shot
+    if(codriver.GetBButtonPressed()){
+      shooter.SetShooter(50_fps, 40_fps);
+      manualShooterMode = false;
+    }
+    //Auto High Goal Shot
+    if(codriver.GetYButtonPressed()){
+      shooter.SetShooter(100_fps, 85_fps);
+      manualShooterMode = false;
+    }
+
+
     /*
-    if(stick.GetYButtonPressed()){
+    if(driver.GetYButtonPressed()){
       shooter.SetAngle(20_deg);
     }
-    if(stick.GetAButtonPressed()){
+    if(driver.GetAButtonPressed()){
       shooter.SetAngle(-20_deg);
     }
-    if(stick.GetBButtonPressed()){
+    if(driver.GetBButtonPressed()){
       shooter.SetAngle(0_deg);
     }
     */
@@ -346,11 +478,11 @@ private:
     
     //DriveWithJoystick(true); 
 
-    if(stick.GetStartButtonPressed()){
+    if(driver.GetStartButtonPressed()){
       headingControl = !headingControl;
     }    
 
-    if(stick.GetBackButtonPressed()){
+    if(driver.GetBackButtonPressed()){
       m_swerve.SetPose(frc::Pose2d(0_m, 0_m, frc::Rotation2d(0_deg)));
     }
 

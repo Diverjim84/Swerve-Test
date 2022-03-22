@@ -39,7 +39,7 @@ private:
   StageState m_lowerState;
   StageState m_upperState;
 
-  frc::DoubleSolenoid m_feederPiston{frc::PneumaticsModuleType::CTREPCM,0,1};
+  frc::DoubleSolenoid m_feederPiston{frc::PneumaticsModuleType::CTREPCM,1,0};
   frc::Timer m_feederUpTimer;
 
   frc::Timer m_firingTimer;

@@ -18,6 +18,9 @@ namespace constants{
   constexpr double NominalVoltage = 12.0;
   constexpr double ShooterTurnTicksPerDegree = 4096.0/(360.0/6.0);
 
+  constexpr units::scalar_t ShooterGearRatio = 1.0;
+  constexpr units::inch_t ShooterWheelRadius = 4_in;
+
   namespace swerveConstants{
 
     constexpr int PigeonID = 32;

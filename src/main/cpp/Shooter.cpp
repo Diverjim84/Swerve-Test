@@ -5,6 +5,8 @@
 #include "Shooter.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include "Constants.h"
+#include "CTREHelpers.h"
+#include <units/units.h>
 
 Shooter::Shooter(){
     
@@ -18,10 +20,10 @@ Shooter::Shooter(){
     
 
     fmc.slot0.kP = 0.0;
-    fmc.slot0.kF = .046;
+    fmc.slot0.kF = .055;
     
     bmc.slot0.kP = 0.0;
-    bmc.slot0.kF = .046;
+    bmc.slot0.kF = .055;
 
     //turn gear ratio 72:12
 
@@ -65,6 +67,13 @@ void Shooter::SetShooterSpeed(double frontSpeed, double backSpeed){
     m_backMotor.Set(motorcontrol::ControlMode::PercentOutput, backSpeed);
 }
 
+void Shooter::SetShooter(units::feet_per_second_t frontSpeed, units::feet_per_second_t backSpeed){
+    m_frontMotor.Set(motorcontrol::ControlMode::Velocity, 
+        ctreHelpers::MPS_2_TalonFX(frontSpeed, constants::ShooterGearRatio, constants::ShooterWheelRadius));
+    m_backMotor.Set(motorcontrol::ControlMode::Velocity, 
+        ctreHelpers::MPS_2_TalonFX(backSpeed, constants::ShooterGearRatio, constants::ShooterWheelRadius));
+}
+
 void Shooter::SetAngleMotorSpeed(double speed){
     m_turnMotor.Set(motorcontrol::ControlMode::PercentOutput, speed);
 }
@@ -81,7 +90,14 @@ units::degree_t Shooter::GetAngle(){
 
 void Shooter::SendData(){
     frc::SmartDashboard::PutNumber("Shooter Front Speed", m_frontMotor.GetSelectedSensorVelocity());
+    if(m_frontMotor.GetControlMode()==ControlMode::Velocity){
+        frc::SmartDashboard::PutNumber("Shooter Front Error", m_frontMotor.GetClosedLoopError());
+    }
+
     frc::SmartDashboard::PutNumber("Shooter Back Speed", m_backMotor.GetSelectedSensorVelocity());
+    if(m_backMotor.GetControlMode()==ControlMode::Velocity){
+        frc::SmartDashboard::PutNumber("Shooter Back Error", m_backMotor.GetClosedLoopError());
+    }
     frc::SmartDashboard::PutNumber("Shooter Turn Position", m_turnMotor.GetSelectedSensorPosition());
     frc::SmartDashboard::PutBoolean("Shooter Turn Front LM", m_turnMotor.IsFwdLimitSwitchClosed());
     frc::SmartDashboard::PutBoolean("Shooter Turn Rear LM", m_turnMotor.IsRevLimitSwitchClosed());
