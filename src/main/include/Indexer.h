@@ -52,7 +52,7 @@ private:
   
   Indexer();
   void Init(BallColor myColor);
-  void Update();
+  void Update(bool eject = false);
   void Stop();
   int  Ready2Fire();
   void Fire();

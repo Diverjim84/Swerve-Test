@@ -43,7 +43,7 @@ namespace constants{
     
     /* Swerve Profiling Values */
     constexpr units::meters_per_second_t MaxSpeed{4.5}; //meters per second
-    constexpr units::meters_per_second_squared_t MaxAcceleration{4.5}; //meters per second
+    constexpr units::meters_per_second_squared_t MaxAcceleration{6.0}; //meters per second
     constexpr units::radians_per_second_t MaxAngularVelocity{11.5};
 
     /* Drive Motor Characterization Values */

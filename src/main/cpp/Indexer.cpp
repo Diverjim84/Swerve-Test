@@ -44,8 +44,24 @@ void Indexer::Init(BallColor myColor){
     }
 }
 
-void Indexer::Update(){
-    
+void Indexer::Update(bool eject){
+    if(eject)
+    {
+        SetUpper(-1.0);
+        SetLower(-1.0);
+        SetFeederSpeed(-1.0);
+        if(GetUpperBallSensor()){
+            m_upperState.state = kReady;
+        }else{
+            m_upperState.state = kEmpty;
+        }
+        if(GetLowerBallSensor()){
+            m_lowerState.state = kReady;
+        }else{
+            m_lowerState.state = kEmpty;
+        }
+        return;
+    }
     /*
     if(m_firingTimer.Get()>.2_s){
             m_upperState.state = BallState::kEmpty;
@@ -108,7 +124,7 @@ void Indexer::Update(){
         switch (m_lowerState.state)
         {
         case BallState::kEmpty : 
-            SetLower(.1);
+            SetLower(.5);
             break;
         case BallState::kReady : 
             SetLower(.0);
