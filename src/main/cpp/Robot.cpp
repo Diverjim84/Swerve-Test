@@ -43,12 +43,21 @@ private:
 
   double m_speedScale;
 
-  frc::SendableChooser<std::string> m_autoChooser;
+  enum AutoRoutine {
+      k5Ball,
+      k7Ball,
+      k2Ball,
+      k1Ball,
+  } m_autoSelected;
+
+  frc::SendableChooser<AutoRoutine> m_autoChooser;
   const std::string kAuto5Ball = "5 Ball";
   const std::string kAuto2Ball = "2 Ball";
   const std::string kAuto1Ball = "1 Ball";
   const std::string kAuto7Ball = "7 Ball";
-  std::string m_autoSelected;
+  //std::string m_autoSelected;
+
+  
 
   frc::Trajectory traj;
   frc::Trajectory traj2;
@@ -71,61 +80,42 @@ private:
   frc::SlewRateLimiter<units::scalar> m_yspeedLimiter{2 / 1_s};
   frc::SlewRateLimiter<units::scalar> m_rotLimiter{2 / 1_s};
 
-  void DriveWithJoystick(bool fieldRelative) {
-
-    m_speedScale = 1.0-driver.GetRightTriggerAxis();
-
-    // Get the x speed. We are inverting this because Xbox controllers return
-    // negative values when we push forward.
-    const auto xSpeed = -m_xspeedLimiter.Calculate(
-                            frc::ApplyDeadband(driver.GetLeftY(), 0.15)) *
-                        constants::swerveConstants::MaxSpeed*m_speedScale;
-
-    // Get the y speed or sideways/strafe speed. We are inverting this because
-    // we want a positive value when we pull to the left. Xbox controllers
-    // return positive values when you pull to the right by default.
-    const auto ySpeed = -m_yspeedLimiter.Calculate(
-                            frc::ApplyDeadband(driver.GetLeftX(), 0.15)) *
-                        constants::swerveConstants::MaxSpeed*m_speedScale;
-
-    
-
-    frc::SmartDashboard::PutNumber("Drive Command X Speed", xSpeed.value());
-    frc::SmartDashboard::PutNumber("Drive Command Y Speed", ySpeed.value());
-    
-    m_swerve.DriveXY(xSpeed, ySpeed);
-    
-  }
 
   void Gen5Ball(){
+    //set Starting Pose
     frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
-     
-    m_speedScale = 1.0;
-
     m_swerve.SetPose(x);
+    
+    //init trajector selector
     trajSelect = 0;
 
+    //create trajectory 1 - starting to ball 1
     frc::Pose2d trajStartPoint{x.X(),x.Y(),x.Rotation().Degrees()};
-    frc::Pose2d trajEndPoint{301_in,20_in,-100_deg};
+    frc::Pose2d trajEndPoint{301_in,10_in,-100_deg};
     std::vector<frc::Translation2d> interiorWaypoints{
       frc::Translation2d{306_in, 71_in}};
 
+    //set speed scaler
     units::scalar_t scaleSpeed = 1.0;
+    //configure traj with speed and acceleration 
     units::meters_per_second_t maxV(constants::swerveConstants::MaxSpeed/scaleSpeed);
     units::meters_per_second_squared_t maxA(constants::swerveConstants::MaxAcceleration);
     frc::TrajectoryConfig config{ maxV, maxA};
-
+    
+    //don't care for swerve
     config.SetReversed(false);
     
+    //gen traj
     traj = frc::TrajectoryGenerator::GenerateTrajectory(trajStartPoint, interiorWaypoints, trajEndPoint, config);
 
-    frc::Pose2d trajEndPoint2{12_in,33_in,-100_deg};
+    //traj 2 ball 1 to ball 2&3
+    frc::Pose2d trajEndPoint2{0_in,20_in,-100_deg};
     std::vector<frc::Translation2d> interiorWaypoints2{
       frc::Translation2d{270_in, 90_in},
       frc::Translation2d{198_in, 75_in}/*,
       frc::Translation2d{50_in, 50_in}*/
       };
-    
+    //create a slow down 
     frc::RectangularRegionConstraint slowRegion1(frc::Translation2d{180_in, 60_in},
                                                  frc::Translation2d{212_in, 90_in},
                                                  frc::MaxVelocityConstraint{1_mps}
@@ -148,7 +138,66 @@ private:
     
   }
 
+  void GenTraj(){
+    AutoRoutine t = m_autoChooser.GetSelected();
+    if(t==m_autoSelected){
+      return;
+    }
+
+    m_autoSelected = t;
+    switch(m_autoSelected){
+      case AutoRoutine::k1Ball : Gen1Ball();
+        break;
+      case AutoRoutine::k2Ball : Gen2Ball();
+        break;
+      case AutoRoutine::k5Ball : Gen5Ball();
+        break;
+      case AutoRoutine::k7Ball : Gen7Ball();
+        break;
+
+    }
+  }
+
   void Run5Ball(){
+    frc::Pose2d p;
+    switch(trajSelect){
+      case 0: //shooter.SetShooter(20_fps, 15_fps);//25_fps, 37_fps
+              shooter.SetShooter(25_fps, 37_fps);
+              indexer.Fire();
+              if(autoTimer.Get()>.5_s){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      case 1: p = traj.Sample(autoTimer.Get()).pose; 
+              m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
+              if(autoTimer.Get()>(traj.TotalTime())){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      case 2: shooter.SetShooter(40_fps, 45_fps);
+              //indexer.Fire();
+              indexer.SetUpper(1.0);
+              indexer.SetLower(.6);
+              if(autoTimer.Get()>1_s){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      case 3: p = traj2.Sample(autoTimer.Get()).pose;
+              m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
+              if(autoTimer.Get()>(traj2.TotalTime()+1_s)){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      default: m_swerve.DriveXY(0_mps,0_mps);
+    }
+    if(IsTargetVisable())
+    {
+      m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees()-GetTargetAngleDelta()/1.0);
+    }
     
   }
 
@@ -172,10 +221,10 @@ private:
     //frc::SmartDashboard::PutData("Drivetrain", &m_swerve);
     //m_swerve.PutChildSendables();
     
-    m_autoChooser.SetDefaultOption(kAuto5Ball, kAuto5Ball);
-    m_autoChooser.AddOption(kAuto7Ball, kAuto7Ball);
-    m_autoChooser.AddOption(kAuto2Ball, kAuto2Ball);
-    m_autoChooser.AddOption(kAuto1Ball, kAuto1Ball);
+    m_autoChooser.SetDefaultOption(kAuto5Ball, AutoRoutine::k5Ball);
+    m_autoChooser.AddOption(kAuto7Ball, AutoRoutine::k7Ball);
+    m_autoChooser.AddOption(kAuto2Ball, AutoRoutine::k2Ball);
+    m_autoChooser.AddOption(kAuto1Ball, AutoRoutine::k1Ball);
     frc::SmartDashboard::PutData("Auto Modes", &m_autoChooser);
 
     m_swerve.SetHeading(-160_deg);
@@ -254,7 +303,13 @@ private:
 
   }
 
+  void DisabledPeriodic() override {
+    GenTraj();
+  }
+
   void AutonomousInit() override {
+    //GenTraj();// make sure no last minute routine change
+/*
     switch(frc::DriverStation::GetAlliance()){
       case frc::DriverStation::kBlue: indexer.Init(Indexer::BallColor::kBlue);
                                       break;
@@ -262,38 +317,33 @@ private:
                                       break;
       default: indexer.Init(Indexer::BallColor::kBlue);
     }
-
+*/
     frc::Pose2d x(316.15_in, 112.2_in, frc::Rotation2d(-111_deg));
      
     m_swerve.SetPose(x);
     autoTimer.Reset();
     autoTimer.Start();
     trajSelect = 0;
-
+    
+    Gen5Ball();
+    m_autoSelected = AutoRoutine::k5Ball;
+    indexer.SetFeederSpeed(.7);
+    indexer.SetFeederPos(true);
   }
 
   void AutonomousPeriodic() override {
     //DriveWithJoystick(false);
     m_swerve.UpdateOdometry();
-    
-    
-    frc::Pose2d p;
-    switch(trajSelect){
-      case 0: p = traj.Sample(autoTimer.Get()).pose; 
-              m_swerve.DrivePos(p.X(), p.Y(), -100_deg);
-              if(autoTimer.Get()>(traj.TotalTime()+1_s)){
-                trajSelect++;
-                autoTimer.Reset();
-              }
-              break;
-      case 1: p = traj2.Sample(autoTimer.Get()).pose;
-              m_swerve.DrivePos(p.X(), p.Y(), -140_deg);
-              if(autoTimer.Get()>(traj2.TotalTime()+1_s)){
-                trajSelect++;
-                autoTimer.Reset();
-              }
-              break;
-      default: m_swerve.DriveXY(0_mps,0_mps);
+    indexer.Update();
+    switch(m_autoSelected){
+      case AutoRoutine::k1Ball : Run1Ball();
+        break;
+      case AutoRoutine::k2Ball : Run2Ball();
+        break;
+      case AutoRoutine::k5Ball : Run5Ball();
+        break;
+      case AutoRoutine::k7Ball : Run7Ball();
+        break;
     }
     
     
@@ -309,6 +359,10 @@ private:
       default: indexer.Init(Indexer::BallColor::kBlue);
     }
     }
+    m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees());
+    indexer.SetFeederPos(true);
+
+    
   }
 
   void Balls(){
@@ -349,7 +403,7 @@ private:
   {
     double drivex = -driver.GetLeftY();
     double drivey = -driver.GetLeftX();
-    if((fabs(drivex)+fabs(drivey))/2.0<.1){
+    if((fabs(drivex)+fabs(drivey))/2.0<.05){
       drivex = 0.0;
       drivey = 0.0;
     }
@@ -358,8 +412,8 @@ private:
     double hy = -driver.GetRightX(); //hy is w for vel control
     double hx = -driver.GetRightY();
 
-    units::scalar_t scale = 1.0-driver.GetRightTriggerAxis()*.5;
-
+    units::scalar_t scale = 1.0-driver.GetRightTriggerAxis()*.9;
+    scale = scale*.8;
     if(driver.GetXButtonPressed()){
       driveMode = DriveMode::TargetTracking;
     }
@@ -384,7 +438,7 @@ private:
             true);
         break;
       case DriveMode::HeadingControl :
-        if(sqrt(hx*hx+hy*hy) > .75)//make sure the joystick is begin used by calculating magnitude
+        if(sqrt(hx*hx+hy*hy) > .95)//make sure the joystick is begin used by calculating magnitude
         {
             m_swerve.SetTargetHeading(frc::Rotation2d(hx, hy).Degrees());
         }
@@ -394,6 +448,10 @@ private:
         break;
       case DriveMode::TargetTracking :
         //add code to set heading angle
+        if(IsTargetVisable())
+        {
+          m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees()-GetTargetAngleDelta()/1.0);
+        }
         m_swerve.DriveXY(
             m_xspeedLimiter.Calculate(pow(drivex,1)) * constants::swerveConstants::MaxSpeed * scale,
             m_yspeedLimiter.Calculate(pow(drivey,1)) * constants::swerveConstants::MaxSpeed * scale);
@@ -441,22 +499,22 @@ private:
     //Near High Goal Shot
     if(codriver.GetAButtonPressed()){
       //exit velocity of 21fps, 75deg, 1.25ft from target edge
-      shooter.SetShooter(60_fps, 80_fps);
+      shooter.SetShooter(25_fps, 37_fps);//@20deg 27, 37 is solid
       manualShooterMode = false;
     }
     //Near Low Goal Shot
     if(codriver.GetXButtonPressed()){
-      shooter.SetShooter(20_fps, 10_fps);
+      shooter.SetShooter(20_fps, 15_fps);//@20deg 20, 15 is solid
       manualShooterMode = false;
     }
     //Mid High Goal Shot
     if(codriver.GetBButtonPressed()){
-      shooter.SetShooter(50_fps, 40_fps);
+      shooter.SetShooter(40_fps, 45_fps);
       manualShooterMode = false;
     }
     //Auto High Goal Shot
     if(codriver.GetYButtonPressed()){
-      shooter.SetShooter(100_fps, 85_fps);
+      shooter.SetShooter(100_fps, 0_fps);
       manualShooterMode = false;
     }
 
@@ -488,6 +546,9 @@ private:
 
     
     Balls();
+    //indexer.SetFeederSpeed(.8);
+    //indexer.SetUpper(1.0);
+    //indexer.SetLower(.6);
     Shoot();
     Drive();
     

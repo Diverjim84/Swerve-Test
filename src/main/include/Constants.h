@@ -85,7 +85,7 @@ namespace constants{
       SwerveConfig()
       {
 
-        driveMotorConfig.slot0.kP = .12;
+        driveMotorConfig.slot0.kP = .05;
         driveMotorConfig.slot0.kF = .046;
 
         driveMotorConfig.slot0.integralZone = 100.0;
