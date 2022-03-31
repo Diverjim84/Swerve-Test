@@ -56,7 +56,10 @@ private:
   const std::string kAuto1Ball = "1 Ball";
   const std::string kAuto7Ball = "7 Ball";
   //std::string m_autoSelected;
-
+  frc::SendableChooser<bool> m_autoGoalChooser;
+  const std::string kAutoHigh = "High Goal";
+  const std::string kAutoLow  = "Low Goal";
+  
   
 
   frc::Trajectory traj;
@@ -307,9 +310,13 @@ private:
   void Run5Ball(){
     frc::Pose2d p;
     switch(trajSelect){
-      case 0: //shooter.SetShooter(20_fps, 15_fps);//25_fps, 37_fps
-              shooter.SetShooter(25_fps, 37_fps);
+      case 0: if(m_autoGoalChooser.GetSelected()){
+                shooter.SetShooter(constants::ShooterFront_NearHigh , constants::ShooterBack_NearHigh);
+              }else{
+                shooter.SetShooter(constants::ShooterFront_NearLow, constants::ShooterBack_NearLow);
+              }
               indexer.Fire();
+              indexer.Update();
               if(autoTimer.Get()>.5_s){
                 trajSelect++;
                 autoTimer.Reset();
@@ -317,23 +324,41 @@ private:
               break;
       case 1: p = traj.Sample(autoTimer.Get()).pose; 
               m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
+              shooter.SetShooter(40_fps, 45_fps);//Get shooter Up to Speed
+              indexer.Update();
               if(autoTimer.Get()>(traj.TotalTime())){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
-      case 2: shooter.SetShooter(40_fps, 45_fps);
-              //indexer.Fire();
+      case 2: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
               indexer.SetUpper(1.0);
               indexer.SetLower(.6);
-              if(autoTimer.Get()>1_s){
+              if((!indexer.GetLowerBallSensor()&&!indexer.GetLowerBallSensor())||autoTimer.Get()>1_s){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
       case 3: p = traj2.Sample(autoTimer.Get()).pose;
               m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
+              indexer.Update();
               if(autoTimer.Get()>(traj2.TotalTime()+1_s)){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      case 4: p = traj3.Sample(autoTimer.Get()).pose;
+              m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
+              indexer.Update();
+              if(autoTimer.Get()>(traj3.TotalTime()+1_s)){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
+      case 5: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
+              indexer.SetUpper(1.0);
+              indexer.SetLower(.6);
+              if((!indexer.GetLowerBallSensor()&&!indexer.GetLowerBallSensor())||autoTimer.Get()>1_s){
                 trajSelect++;
                 autoTimer.Reset();
               }
@@ -347,8 +372,11 @@ private:
   void Run5Ball_Old(){
     frc::Pose2d p;
     switch(trajSelect){
-      case 0: //shooter.SetShooter(20_fps, 15_fps);//25_fps, 37_fps
-              shooter.SetShooter(25_fps, 37_fps);
+      case 0: if(m_autoGoalChooser.GetSelected()){
+                shooter.SetShooter(constants::ShooterFront_NearHigh , constants::ShooterBack_NearHigh);
+              }else{
+                shooter.SetShooter(constants::ShooterFront_NearLow, constants::ShooterBack_NearLow);
+              }
               indexer.Fire();
               if(autoTimer.Get()>.5_s){
                 trajSelect++;
@@ -362,7 +390,7 @@ private:
                 autoTimer.Reset();
               }
               break;
-      case 2: shooter.SetShooter(40_fps, 45_fps);
+      case 2: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
               //indexer.Fire();
               indexer.SetUpper(1.0);
               indexer.SetLower(.6);
@@ -390,9 +418,13 @@ private:
   void Run7Ball(){
     frc::Pose2d p;
     switch(trajSelect){
-      case 0: //shooter.SetShooter(20_fps, 15_fps);//25_fps, 37_fps
-              shooter.SetShooter(25_fps, 37_fps);
+      case 0: if(m_autoGoalChooser.GetSelected()){
+                shooter.SetShooter(constants::ShooterFront_NearHigh , constants::ShooterBack_NearHigh);
+              }else{
+                shooter.SetShooter(constants::ShooterFront_NearLow, constants::ShooterBack_NearLow);
+              }
               indexer.Fire();
+              indexer.Update();
               if(autoTimer.Get()>.5_s){
                 trajSelect++;
                 autoTimer.Reset();
@@ -405,18 +437,17 @@ private:
                 autoTimer.Reset();
               }
               break;
-      case 2: shooter.SetShooter(40_fps, 45_fps);
-              //indexer.Fire();
+      case 2: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
               indexer.SetUpper(1.0);
               indexer.SetLower(.6);
-              if(autoTimer.Get()>1_s){
+              if((!indexer.GetLowerBallSensor()&&!indexer.GetLowerBallSensor())||autoTimer.Get()>1_s){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
       case 3: p = traj2.Sample(autoTimer.Get()).pose;
               m_swerve.DrivePos(p.X(), p.Y(), 0_deg);//Need to approach Straight because of wall
-              if(autoTimer.Get()>(traj2.TotalTime()+3_s)){
+              if(autoTimer.Get()>(traj2.TotalTime()+2_s)){
                 trajSelect++;
                 autoTimer.Reset();
               }
@@ -428,30 +459,30 @@ private:
                 autoTimer.Reset();
               }
               break;
-      case 5: shooter.SetShooter(40_fps, 45_fps);
+      case 5: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
               indexer.Fire();
-              if(autoTimer.Get()>1_s){
+              if((!indexer.GetLowerBallSensor()&&!indexer.GetLowerBallSensor())||autoTimer.Get()>1_s){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
       case 6: p = traj4.Sample(autoTimer.Get()).pose;
               m_swerve.DrivePos(p.X(), p.Y(), 45_deg);//approach corner wall
-              if(autoTimer.Get()>(traj4.TotalTime()+1_s)){
+              if(autoTimer.Get()>(traj4.TotalTime()+3_s)){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
       case 7: p = traj5.Sample(autoTimer.Get()).pose;
               m_swerve.DrivePos(p.X(), p.Y(), m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
-              if(autoTimer.Get()>(traj5.TotalTime()+1_s)){
+              if(autoTimer.Get()>(traj5.TotalTime()+0_s)){
                 trajSelect++;
                 autoTimer.Reset();
               }
               break;
-      case 8: shooter.SetShooter(40_fps, 45_fps);
+      case 8: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
               indexer.Fire();
-              if(autoTimer.Get()>1_s){
+              if((!indexer.GetLowerBallSensor()&&!indexer.GetLowerBallSensor())||autoTimer.Get()>1_s){
                 trajSelect++;
                 autoTimer.Reset();
               }
@@ -463,8 +494,11 @@ private:
   void Run2Ball(){
     frc::Pose2d p;
     switch(trajSelect){
-      case 0: //shooter.SetShooter(20_fps, 15_fps);
-              shooter.SetShooter(25_fps, 37_fps);
+      case 0: if(m_autoGoalChooser.GetSelected()){
+                shooter.SetShooter(constants::ShooterFront_NearHigh , constants::ShooterBack_NearHigh);
+              }else{
+                shooter.SetShooter(constants::ShooterFront_NearLow, constants::ShooterBack_NearLow);
+              }
               indexer.Fire();
               if(autoTimer.Get()>.5_s){
                 trajSelect++;
@@ -478,6 +512,13 @@ private:
                 autoTimer.Reset();
               }
               break;
+      case 2: shooter.SetShooter(constants::ShooterFront_Auto, constants::ShooterBack_Auto);
+              indexer.Fire();
+              if(autoTimer.Get()>2_s){
+                trajSelect++;
+                autoTimer.Reset();
+              }
+              break;
       default: m_swerve.DriveXY(0_mps,0_mps);
                m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees()-GetTargetAngleDelta()/1.0);
     }
@@ -486,8 +527,11 @@ private:
   void Run1Ball(){
     frc::Pose2d p;
     switch(trajSelect){
-      case 0: //shooter.SetShooter(20_fps, 15_fps);
-              shooter.SetShooter(25_fps, 37_fps);
+      case 0: if(m_autoGoalChooser.GetSelected()){
+                shooter.SetShooter(constants::ShooterFront_NearHigh , constants::ShooterBack_NearHigh);
+              }else{
+                shooter.SetShooter(constants::ShooterFront_NearLow, constants::ShooterBack_NearLow);
+              }
               indexer.Fire();
               if(autoTimer.Get()>.5_s){
                 trajSelect++;
@@ -520,7 +564,10 @@ private:
     m_autoChooser.AddOption(kAuto1Ball, AutoRoutine::k1Ball);
     frc::SmartDashboard::PutData("Auto Modes", &m_autoChooser);
 
-    m_swerve.SetHeading(-160_deg);
+    m_autoGoalChooser.SetDefaultOption(kAutoLow, false);
+    m_autoGoalChooser.SetDefaultOption(kAutoHigh, true);
+
+    m_swerve.SetHeading(0_deg);
     headingControl =  true;
     manualShooterMode = false;
     driveMode = DriveMode::HeadingControl;
@@ -736,7 +783,10 @@ private:
         //add code to set heading angle
         if(IsTargetVisable())
         {
-          m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees()-GetTargetAngleDelta()/1.0);
+          auto v = m_swerve.GetChassisSpeeds();
+          auto d = GetTargetRange();
+          
+          m_swerve.SetTargetHeading(m_swerve.GetHeading().Degrees()-GetTargetAngleDelta());
         }
         m_swerve.DriveXY(
             m_xspeedLimiter.Calculate(pow(drivex,1)) * constants::swerveConstants::MaxSpeed * scale,

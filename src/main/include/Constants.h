@@ -20,6 +20,24 @@ namespace constants{
 
   constexpr units::scalar_t ShooterGearRatio = 1.0;
   constexpr units::inch_t ShooterWheelRadius = 4_in;
+  
+  constexpr units::feet_per_second_t ShooterFront_NearLow = 20_fps;
+  constexpr units::feet_per_second_t ShooterBack_NearLow = 15_fps;
+
+  constexpr units::feet_per_second_t ShooterFront_NearHigh = 25_fps;
+  constexpr units::feet_per_second_t ShooterBack_NearHigh = 37_fps;
+  
+  constexpr units::inch_t ShooterMidDistance = 160_in;
+  constexpr units::feet_per_second_t ShooterFront_MidHigh = 40_fps;
+  constexpr units::feet_per_second_t ShooterBack_MidHigh = 45_fps;
+  
+  constexpr units::inch_t ShooterMidDistance = 320_in;
+  constexpr units::feet_per_second_t ShooterFront_FarHigh = 55_fps;
+  constexpr units::feet_per_second_t ShooterBack_FarHigh = 55_fps;
+
+  constexpr units::feet_per_second_t ShooterFront_Auto = 35_fps;
+  constexpr units::feet_per_second_t ShooterBack_Auto = 45_fps;
+
 
   namespace swerveConstants{
 

@@ -72,4 +72,7 @@ private:
   bool GetUpperBallSensor(){return !m_upperBallSensor.Get();};
   bool GetLowerBallSensor(){return !m_lowerBallSensor.Get();};
 
+  bool IsUpperEmpty(){if(m_upperState.state==kReady){return false;}else{return true;}};
+  bool IsLowerEmpty(){if(m_lowerState.state==kReady){return false;}else{return true;}};
+
 };

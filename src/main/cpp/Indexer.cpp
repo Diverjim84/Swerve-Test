@@ -78,14 +78,13 @@ void Indexer::Update(bool eject){
         }
     }else{
         if(m_upperState.state == kFiring){
-            if(m_firingTimer.Get()>.25_s){
+            //if(m_firingTimer.Get()>.25_s){
                 m_upperState.state = BallState::kEmpty;
                 m_upperState.color = BallColor::kNone;
                 m_firing = false;
-                //SetUpper(0.5);//MOVE!!!
-            }else{
-                m_upperState.state = kFiring;
-            }
+            //}else{
+            //    m_upperState.state = kFiring;
+            //}
         }else{
             m_upperState.state = BallState::kEmpty;
         }
@@ -110,7 +109,7 @@ void Indexer::Update(bool eject){
         switch (m_upperState.state)
         {
         case BallState::kEmpty : 
-            SetUpper(.25);
+            SetUpper(.5);
             break;
         case BallState::kFiring : 
             SetUpper(1.0);//Increase after Mechanical Fixes their crap!!!
@@ -166,8 +165,10 @@ void Indexer::Fire(){
         m_firingTimer.Start();
         m_upperState.state = BallState::kFiring;
         SetUpper(1.0);
+        if(m_lowerState.state == kReady){
+            SetLower(.5);
+        }       
     }
-
 }
 
 void Indexer::SetFeeder(bool down, double speed){
