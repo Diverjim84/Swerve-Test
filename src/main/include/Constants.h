@@ -11,6 +11,8 @@
 
 #include <ctre/Phoenix.h>
 
+
+
 #include "SwerveModuleConstants.h"
 
 namespace constants{
@@ -24,20 +26,29 @@ namespace constants{
   constexpr units::feet_per_second_t ShooterFront_NearLow = 20_fps;
   constexpr units::feet_per_second_t ShooterBack_NearLow = 15_fps;
 
-  constexpr units::feet_per_second_t ShooterFront_NearHigh = 25_fps;
-  constexpr units::feet_per_second_t ShooterBack_NearHigh = 37_fps;
+  constexpr units::inch_t ShooterNearDistance = 67_in;
+  constexpr units::feet_per_second_t ShooterFront_NearHigh = 30_fps;
+  constexpr units::feet_per_second_t ShooterBack_NearHigh = 42_fps;
   
-  constexpr units::inch_t ShooterMidDistance = 160_in;
-  constexpr units::feet_per_second_t ShooterFront_MidHigh = 40_fps;
-  constexpr units::feet_per_second_t ShooterBack_MidHigh = 45_fps;
+  constexpr units::inch_t ShooterMidDistance = 160_in;//unknown
+  constexpr units::feet_per_second_t ShooterFront_MidHigh = 38_fps;
+  constexpr units::feet_per_second_t ShooterBack_MidHigh = 48_fps;
   
-  constexpr units::inch_t ShooterMidDistance = 320_in;
-  constexpr units::feet_per_second_t ShooterFront_FarHigh = 55_fps;
-  constexpr units::feet_per_second_t ShooterBack_FarHigh = 55_fps;
+  constexpr units::inch_t ShooterFarDistance = 232_in;//1.5' from alliance wall
+  constexpr units::feet_per_second_t ShooterFront_FarHigh = 41_fps;
+  constexpr units::feet_per_second_t ShooterBack_FarHigh = ShooterFront_FarHigh*1.4;
 
-  constexpr units::feet_per_second_t ShooterFront_Auto = 35_fps;
-  constexpr units::feet_per_second_t ShooterBack_Auto = 45_fps;
+  //range delta from Near to far = 165"
+  //Speed delta 41-30=11fps
+  //11fps/165"= .066fps/inch
 
+  //@172" overshooting by 10%
+  //
+
+  constexpr units::feet_per_second_t ShooterFront_Auto = 40_fps;
+  constexpr units::feet_per_second_t ShooterBack_Auto = 50_fps;
+
+  
 
   namespace swerveConstants{
 
@@ -60,7 +71,7 @@ namespace constants{
     constexpr bool DriveLeftInvert = false;
     
     /* Swerve Profiling Values */
-    constexpr units::meters_per_second_t MaxSpeed{4.5}; //meters per second
+    constexpr units::meters_per_second_t MaxSpeed{4}; //meters per second
     constexpr units::meters_per_second_squared_t MaxAcceleration{6.0}; //meters per second
     constexpr units::radians_per_second_t MaxAngularVelocity{11.5};
 
@@ -130,8 +141,8 @@ namespace constants{
         turnMotorCurrentLimits.triggerThresholdTime = 0.1;
         turnMotorCurrentLimits.enable = true;
 
-        driveMotorCurrentLimits.currentLimit = 35;
-        driveMotorCurrentLimits.triggerThresholdCurrent = 60;
+        driveMotorCurrentLimits.currentLimit = 15;
+        driveMotorCurrentLimits.triggerThresholdCurrent = 30;
         driveMotorCurrentLimits.triggerThresholdTime = 0.1;
         driveMotorCurrentLimits.enable = true;
 

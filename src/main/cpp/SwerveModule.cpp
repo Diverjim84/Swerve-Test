@@ -99,6 +99,10 @@ frc::Rotation2d SwerveModule::GetAngle(){
     return frc::Rotation2d(angle); //return rotation object
 }
 
+void SwerveModule::ResetDriveEncoder(){
+    m_driveMotor.SetSelectedSensorPosition(0);
+}
+
 
 
 void SwerveModule::InitSendable(wpi::SendableBuilder& builder){
@@ -129,7 +133,7 @@ void SwerveModule::SendData(){
     //drive motor
     frc::SmartDashboard::PutNumber(m_id + " drive mps", GetState().speed.value());
     //frc::SmartDashboard::PutNumber(m_id + " raw drive speed", m_driveMotor.GetSelectedSensorVelocity());
-    //frc::SmartDashboard::PutNumber(m_id + " raw drive position", m_driveMotor.GetSelectedSensorPosition());
+    frc::SmartDashboard::PutNumber(m_id + " raw drive position", m_driveMotor.GetSelectedSensorPosition());
     //frc::SmartDashboard::PutNumber(m_id + " raw drive Output %", m_driveMotor.GetMotorOutputPercent());
     //frc::SmartDashboard::PutString(m_id + " Drive Control Mode", ctreHelpers::CTREControlMode2Str(m_driveMotor.GetControlMode()));
     frc::SmartDashboard::PutNumber(m_id + " raw drive pid target", ctreHelpers::CTRE_Get_PID_Target(m_driveMotor));

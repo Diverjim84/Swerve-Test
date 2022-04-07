@@ -81,6 +81,8 @@ class Drivetrain : public wpi::Sendable {
   void SetDriveInverted(bool leftInvert, bool rightInvert);
   void SetTurnInverted(bool leftInvert, bool rightInvert);
 
+  void ResetDriveEncoders();
+
   frc::Rotation2d GetHeading();
   void SetHeading(units::degree_t angle);
 

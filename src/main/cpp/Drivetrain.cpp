@@ -159,6 +159,13 @@ void Drivetrain::SetHeading(units::degree_t angle){
   SetPose(frc::Pose2d(cur_pose.X(),cur_pose.Y(), frc::Rotation2d(angle)));
 }
 
+void Drivetrain::ResetDriveEncoders(){
+  m_frontLeft.ResetDriveEncoder();
+  m_frontRight.ResetDriveEncoder();
+  m_backLeft.ResetDriveEncoder();
+  m_backRight.ResetDriveEncoder();
+}
+
 void Drivetrain::InitSendable(wpi::SendableBuilder& builder){
   builder.SetSmartDashboardType("Swerve Drivetrain");
 

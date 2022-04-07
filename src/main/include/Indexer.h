@@ -8,7 +8,9 @@
 #include <frc/DigitalInput.h>
 #include <frc/DoubleSolenoid.h>
 #include <frc/Timer.h>
-//#include <rev/
+#include <rev/ColorSensorV3.h>
+#include <rev/ColorMatch.h>
+#include <frc/util/color.h>
 
 class Indexer {
 public:
@@ -45,6 +47,12 @@ private:
 
   frc::Timer m_firingTimer;
   bool m_firing;
+
+  rev::ColorSensorV3 m_colorSensor{frc::I2C::Port::kOnboard};
+  rev::ColorMatch m_matcher;
+
+  static constexpr frc::Color kBlueBall = frc::Color(0.143, 0.427, 0.429);
+  static constexpr frc::Color kRedBall = frc::Color(0.561, 0.232, 0.114);
   
 
  public:

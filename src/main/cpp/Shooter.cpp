@@ -19,11 +19,11 @@ Shooter::Shooter(){
     //2028 forward limit
     
 
-    fmc.slot0.kP = 0.0;
-    fmc.slot0.kF = .055;
+    fmc.slot0.kP = 0.05;
+    fmc.slot0.kF = .05;
     
-    bmc.slot0.kP = 0.0;
-    bmc.slot0.kF = .055;
+    bmc.slot0.kP = 0.05;
+    bmc.slot0.kF = .05;
 
     //turn gear ratio 72:12
 
@@ -98,12 +98,9 @@ void Shooter::SendData(){
     if(m_backMotor.GetControlMode()==ControlMode::Velocity){
         frc::SmartDashboard::PutNumber("Shooter Back Error", m_backMotor.GetClosedLoopError());
     }
-    frc::SmartDashboard::PutNumber("Shooter Turn Position", m_turnMotor.GetSelectedSensorPosition());
-    frc::SmartDashboard::PutBoolean("Shooter Turn Front LM", m_turnMotor.IsFwdLimitSwitchClosed());
-    frc::SmartDashboard::PutBoolean("Shooter Turn Rear LM", m_turnMotor.IsRevLimitSwitchClosed());
-    frc::SmartDashboard::PutNumber("Shooter Angle Error", m_turnMotor.GetClosedLoopError());
-    frc::SmartDashboard::PutNumber("Shooter Angle SP", m_turnMotor.GetClosedLoopTarget());
-    frc::SmartDashboard::PutNumber("Shooter Angle", GetAngle().value());
-    frc::SmartDashboard::PutNumber("Shooter Angle Output", m_turnMotor.GetMotorOutputPercent());
+    
+    frc::SmartDashboard::PutNumber("Shooter Front fps", GetFrontFPS().value());
 
+    frc::SmartDashboard::PutNumber("Shooter Back fps", GetBackFPS().value());
+    
 }

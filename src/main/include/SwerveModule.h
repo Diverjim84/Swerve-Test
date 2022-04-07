@@ -38,6 +38,8 @@ class SwerveModule : public wpi::Sendable{
   
   units::meters_per_second_t GetSpeedMPS();
   frc::Rotation2d GetAngle();
+
+  void ResetDriveEncoder();
   
 
   void InitSendable(wpi::SendableBuilder& builder);

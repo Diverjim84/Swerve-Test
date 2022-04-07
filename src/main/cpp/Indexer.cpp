@@ -11,7 +11,8 @@ Indexer::Indexer(){
     m_lowerStageMotor.SetInverted(true);
     m_upperStageMotor.SetInverted(false);
 
-    
+    m_matcher.AddColorMatch(kRedBall);
+    m_matcher.AddColorMatch(kBlueBall);
     
     //Init(BallColor::kNone);
     m_feederPiston.Set(frc::DoubleSolenoid::Value::kReverse);
@@ -100,16 +101,17 @@ void Indexer::Update(bool eject){
         m_lowerState.state = kEmpty;
     }
 
-    if(m_feederPiston.Get() == frc::DoubleSolenoid::Value::kReverse && m_firingTimer.Get()>1.5_s){
-        if(m_upperState.state == BallState::kEmpty || m_lowerState.state == BallState::kEmpty){
+    if(m_feederPiston.Get() == frc::DoubleSolenoid::Value::kReverse && m_firingTimer.Get()>2_s){
+        if(m_upperState.state == BallState::kEmpty && m_lowerState.state == BallState::kEmpty){
             Stop();
+            return;
         }
         
     }else{
         switch (m_upperState.state)
         {
         case BallState::kEmpty : 
-            SetUpper(.5);
+            SetUpper(.4);
             break;
         case BallState::kFiring : 
             SetUpper(1.0);//Increase after Mechanical Fixes their crap!!!
@@ -124,6 +126,7 @@ void Indexer::Update(bool eject){
         {
         case BallState::kEmpty : 
             SetLower(.5);
+            //SetFeederSpeed(.5);
             break;
         case BallState::kReady : 
             SetLower(.0);
@@ -156,19 +159,15 @@ int  Indexer::Ready2Fire(){
 }
 
 void Indexer::Fire(){
-    if(m_firing){
-        return;
-    }
-    if(m_upperState.state == BallState::kReady){
-        m_firing = true;
-        m_firingTimer.Reset();
-        m_firingTimer.Start();
-        m_upperState.state = BallState::kFiring;
-        SetUpper(1.0);
-        if(m_lowerState.state == kReady){
-            SetLower(.5);
-        }       
-    }
+    m_firing = true;
+    m_firingTimer.Reset();
+    m_firingTimer.Start();
+    m_upperState.state = BallState::kFiring;
+    SetUpper(1.0);
+    if(m_lowerState.state == kReady){
+        SetLower(.5);
+    }       
+
 }
 
 void Indexer::SetFeeder(bool down, double speed){
@@ -210,6 +209,11 @@ void Indexer::SendData(){
     
     frc::SmartDashboard::PutBoolean("Upper Sensor", GetUpperBallSensor());
     frc::SmartDashboard::PutBoolean("Lower Sensor", GetLowerBallSensor());
+
+    frc::Color c = m_colorSensor.GetColor();
+    frc::SmartDashboard::PutNumber("Color Sensor Red", c.red);
+    frc::SmartDashboard::PutNumber("Color Sensor Blue", c.blue);
+    frc::SmartDashboard::PutNumber("Color Sensor Green", c.green);
     
     switch (m_upperState.state)
     {

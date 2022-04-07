@@ -6,6 +6,8 @@
 
 #include <ctre/Phoenix.h>
 #include <units/units.h>
+#include "CTREHelpers.h"
+#include "Constants.h"
 
 class Shooter {
   private:
@@ -21,6 +23,13 @@ class Shooter {
   void SetAngleMotorSpeed(double speed);
   void SetAngle(units::degree_t angle);
   units::degree_t GetAngle();
+
+  units::feet_per_second_t GetFrontFPS(){return units::meters_per_second_t( ctreHelpers::TalonFX_2_MPS(m_frontMotor.GetSelectedSensorVelocity(),
+                                        constants::ShooterGearRatio, 
+                                        constants::ShooterWheelRadius));};
+  units::feet_per_second_t GetBackFPS(){return units::meters_per_second_t(ctreHelpers::TalonFX_2_MPS(m_backMotor.GetSelectedSensorVelocity(),
+                                        constants::ShooterGearRatio, 
+                                        constants::ShooterWheelRadius));};
 
   void SendData();
 
