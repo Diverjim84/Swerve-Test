@@ -13,17 +13,14 @@ class Shooter {
   private:
   TalonFX m_backMotor{22};
   TalonFX m_frontMotor{21};
-  TalonSRX m_turnMotor{23};
+  //TalonSRX m_turnMotor{23};
 
  public:
   Shooter();
 
   void SetShooterSpeed(double frontSpeedPercent, double backSpeedPercent);
   void SetShooter(units::feet_per_second_t frontSpeed, units::feet_per_second_t backSpeed);
-  void SetAngleMotorSpeed(double speed);
-  void SetAngle(units::degree_t angle);
-  units::degree_t GetAngle();
-
+  
   units::feet_per_second_t GetFrontFPS(){return units::meters_per_second_t( ctreHelpers::TalonFX_2_MPS(m_frontMotor.GetSelectedSensorVelocity(),
                                         constants::ShooterGearRatio, 
                                         constants::ShooterWheelRadius));};

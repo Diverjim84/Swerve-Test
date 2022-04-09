@@ -111,7 +111,7 @@ void Indexer::Update(bool eject){
         switch (m_upperState.state)
         {
         case BallState::kEmpty : 
-            SetUpper(.4);
+            SetUpper(.3);
             break;
         case BallState::kFiring : 
             SetUpper(1.0);//Increase after Mechanical Fixes their crap!!!

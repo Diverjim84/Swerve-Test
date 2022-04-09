@@ -27,8 +27,8 @@ namespace constants{
   constexpr units::feet_per_second_t ShooterBack_NearLow = 15_fps;
 
   constexpr units::inch_t ShooterNearDistance = 67_in;
-  constexpr units::feet_per_second_t ShooterFront_NearHigh = 30_fps;
-  constexpr units::feet_per_second_t ShooterBack_NearHigh = 42_fps;
+  constexpr units::feet_per_second_t ShooterFront_NearHigh = 28_fps;
+  constexpr units::feet_per_second_t ShooterBack_NearHigh = ShooterFront_NearHigh*1.4;
   
   constexpr units::inch_t ShooterMidDistance = 160_in;//unknown
   constexpr units::feet_per_second_t ShooterFront_MidHigh = 38_fps;
@@ -136,13 +136,13 @@ namespace constants{
         encoderConfig.sensorTimeBase = phoenix::sensors::SensorTimeBase::PerSecond;
 
         /* Swerve Current Limiting */
-        turnMotorCurrentLimits.currentLimit = 25;
-        turnMotorCurrentLimits.triggerThresholdCurrent = 40;
+        turnMotorCurrentLimits.currentLimit = 15;
+        turnMotorCurrentLimits.triggerThresholdCurrent = 20;
         turnMotorCurrentLimits.triggerThresholdTime = 0.1;
         turnMotorCurrentLimits.enable = true;
 
-        driveMotorCurrentLimits.currentLimit = 15;
-        driveMotorCurrentLimits.triggerThresholdCurrent = 30;
+        driveMotorCurrentLimits.currentLimit = 10;
+        driveMotorCurrentLimits.triggerThresholdCurrent = 20;
         driveMotorCurrentLimits.triggerThresholdTime = 0.1;
         driveMotorCurrentLimits.enable = true;
 
