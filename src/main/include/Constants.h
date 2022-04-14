@@ -6,16 +6,24 @@
 
 #include <units/math.h>
 #include <units/units.h>
+#include <frc/geometry/Translation2d.h>
+
 
 #include <frc/kinematics/SwerveDriveKinematics.h>
 
 #include <ctre/Phoenix.h>
+#include <string.h>
 
 
 
 #include "SwerveModuleConstants.h"
 
 namespace constants{
+
+  namespace field{
+    constexpr units::inch_t TargetX = 324_in;
+    constexpr units::inch_t TargetY = 162_in;
+  }
 
   constexpr double NominalVoltage = 12.0;
   constexpr double ShooterTurnTicksPerDegree = 4096.0/(360.0/6.0);
@@ -27,7 +35,7 @@ namespace constants{
   constexpr units::feet_per_second_t ShooterBack_NearLow = 15_fps;
 
   constexpr units::inch_t ShooterNearDistance = 67_in;
-  constexpr units::feet_per_second_t ShooterFront_NearHigh = 28_fps;
+  constexpr units::feet_per_second_t ShooterFront_NearHigh = 29_fps;
   constexpr units::feet_per_second_t ShooterBack_NearHigh = ShooterFront_NearHigh*1.4;
   
   constexpr units::inch_t ShooterMidDistance = 160_in;//unknown
@@ -55,8 +63,12 @@ namespace constants{
     constexpr int PigeonID = 32;
     constexpr bool PigeonInverted = false;
 
+    const std::string DriveCANBus = "Can1";
+    constexpr units::millisecond_t DriveCANBusPeriod = 10_ms;
+
     constexpr double RotGain = 1.5;//for controlling the heading closed loop
     constexpr double PosGain = 5.0;//for controlling the robot auto position
+    
 
     /* Drivetrain Constants */
     constexpr units::meter_t WheelBaseWidth = 19.35_in;
@@ -106,10 +118,11 @@ namespace constants{
       CANCoderConfiguration encoderConfig;
 
                               //driveID, turnID, encoderID, angleOffset
-      SwerveModuleConstants frontLeftConstants{1, 3, 13};
-      SwerveModuleConstants frontRightConstants{7, 8, 12};
-      SwerveModuleConstants rearLeftConstants{5, 6, 14};
-      SwerveModuleConstants rearRightConstants{2, 4, 15};
+      SwerveModuleConstants frontLeftConstants{1, 3, 13, DriveCANBus, DriveCANBusPeriod};
+      SwerveModuleConstants frontRightConstants{7, 8, 12, DriveCANBus, DriveCANBusPeriod};
+      SwerveModuleConstants rearLeftConstants{5, 6, 14, DriveCANBus, DriveCANBusPeriod};
+      SwerveModuleConstants rearRightConstants{2, 4, 15, DriveCANBus, DriveCANBusPeriod};
+      //SwerveModuleConstants rearRightConstants{2, 10, 15, DriveCANBus, DriveCANBusPeriod};
 
       SwerveConfig()
       {

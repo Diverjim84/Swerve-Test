@@ -18,10 +18,10 @@ Shooter::Shooter(){
     //2028 forward limit
     
 
-    fmc.slot0.kP = 0.05;
+    fmc.slot0.kP = 0.03;
     fmc.slot0.kF = .05;
     
-    bmc.slot0.kP = 0.035;
+    bmc.slot0.kP = 0.03;
     bmc.slot0.kF = .05;
 
     
