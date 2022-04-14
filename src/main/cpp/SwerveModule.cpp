@@ -14,9 +14,9 @@
 
 
 SwerveModule::SwerveModule(std::string id, SwerveModuleConstants constants)
-    : m_driveMotor(constants.m_driveMotorID),
-      m_turnMotor(constants.m_turnMotorID),
-      m_turnEncoder(constants.m_encoderID),
+    : m_driveMotor(constants.m_driveMotorID, constants.m_canBus),
+      m_turnMotor(constants.m_turnMotorID, constants.m_canBus),
+      m_turnEncoder(constants.m_encoderID, constants.m_canBus),
       m_driveFeedForward() 
 {
 
@@ -35,6 +35,10 @@ SwerveModule::SwerveModule(std::string id, SwerveModuleConstants constants)
 
     m_turnMotor.SetSelectedSensorPosition(0);
     m_driveMotor.SetSelectedSensorPosition(0);
+
+    m_driveMotor.SetStatusFramePeriod(Status_2_Feedback0, constants.m_FramePeriod.value());
+    m_turnMotor.SetStatusFramePeriod(Status_2_Feedback0, constants.m_FramePeriod.value());
+    m_turnEncoder.SetStatusFramePeriod(CANCoderStatusFrame_SensorData, constants.m_FramePeriod.value());
 
     //m_driveFeedForward.kS = constants::swerveConstants::DriveKS;
     //m_driveFeedForward.kV = constants::swerveConstants::DriveKV;

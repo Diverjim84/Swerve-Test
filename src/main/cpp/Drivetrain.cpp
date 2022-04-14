@@ -13,7 +13,7 @@ Drivetrain::Drivetrain(constants::swerveConstants::SwerveConfig constants):
                         m_frontRight("Front Right", constants.frontRightConstants),
                         m_backLeft("Back Left", constants.rearLeftConstants),
                         m_backRight("Back Right", constants.rearRightConstants),
-                        m_gyro(constants::swerveConstants::PigeonID),
+                        m_gyro(constants::swerveConstants::PigeonID, constants::swerveConstants::DriveCANBus),
                         m_kinematics(constants.m_frontLeftLocation, 
                                       constants.m_frontRightLocation,
                                       constants.m_rearLeftLocation,
@@ -31,7 +31,8 @@ Drivetrain::Drivetrain(constants::swerveConstants::SwerveConfig constants):
   m_targetHeading = 0_deg;
 
   SetDriveInverted(constants::swerveConstants::DriveLeftInvert, constants::swerveConstants::DriveRightInvert);
-
+  m_gyro.SetStatusFramePeriod(PigeonIMU_StatusFrame::PigeonIMU_CondStatus_9_SixDeg_YPR, 
+                              constants::swerveConstants::DriveCANBusPeriod.value());
 }
 
 void Drivetrain::SetDriveInverted(bool leftInvert, bool rightInvert){
