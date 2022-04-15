@@ -63,8 +63,8 @@ namespace constants{
     constexpr int PigeonID = 32;
     constexpr bool PigeonInverted = false;
 
-    const std::string DriveCANBus = "Can1";
-    constexpr units::millisecond_t DriveCANBusPeriod = 10_ms;
+    const std::string DriveCANBus = "rio";//"Can1";
+    constexpr units::millisecond_t DriveCANBusPeriod = 20_ms;
 
     constexpr double RotGain = 1.5;//for controlling the heading closed loop
     constexpr double PosGain = 5.0;//for controlling the robot auto position
